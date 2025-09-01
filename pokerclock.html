@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Poker Grind Clock</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #f1f1f1;
+      text-align: center;
+      padding: 40px;
+    }
+    h1 {
+      margin-bottom: 40px;
+    }
+    .player {
+      border: 1px solid #444;
+      background: #1e1e1e;
+      padding: 20px;
+      margin: 20px auto;
+      max-width: 400px;
+      border-radius: 10px;
+    }
+    .clock-in-time,
+    .clock-out-time,
+    .duration {
+      font-size: 1.1em;
+      margin-top: 8px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .in {
+      background-color: #28a745;
+      color: white;
+    }
+    .out {
+      background-color: #dc3545;
+      color: white;
+    }
+    button:disabled {
+      background: #555;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <h1>Poker Grind Clock</h1>
+
+  <div id="players"></div>
+
+  <script>
+    const players = [
+      { name: "Alice" },
+      { name: "Bob" },
+      { name: "Charlie" },
+      { name: "Diana" },
+      { name: "Eddie" }
+    ];
+
+    const playersDiv = document.getElementById('players');
+
+    players.forEach((player, index) => {
+      const playerDiv = document.createElement('div');
+      playerDiv.className = 'player';
+
+      const nameHeader = document.createElement('h2');
+      nameHeader.textContent = player.name;
+
+      const clockInBtn = document.createElement('button');
+      clockInBtn.textContent = 'Clock In';
+      clockInBtn.className = 'in';
+
+      const clockOutBtn = document.createElement('button');
+      clockOutBtn.textContent = 'Clock Out';
+      clockOutBtn.className = 'out';
+      clockOutBtn.disabled = true;
+
+      const clockInDisplay = document.createElement('div');
+      clockInDisplay.className = 'clock-in-time';
+      clockInDisplay.textContent = 'Not clocked in';
+
+      const clockOutDisplay = document.createElement('div');
+      clockOutDisplay.className = 'clock-out-time';
+
+      const durationDisplay = document.createElement('div');
+      durationDisplay.className = 'duration';
+
+      let clockInTime = null;
+
+      clockInBtn.addEventListener('click', () => {
+        clockInTime = new Date();
+        const timeStr = clockInTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        clockInDisplay.textContent = `Clocked in at: ${timeStr}`;
+        clockInBtn.disabled = true;
+        clockOutBtn.disabled = false;
+        clockOutDisplay.textContent = '';
+        durationDisplay.textContent = '';
+      });
+
+      clockOutBtn.addEventListener('click', () => {
+        const clockOutTime = new Date();
+        const timeStr = clockOutTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        clockOutDisplay.textContent = `Clocked out at: ${timeStr}`;
+        clockOutBtn.disabled = true;
+
+        // Calculate session duration
+        const durationMs = clockOutTime - clockInTime;
+        const durationSec = Math.floor(durationMs / 1000);
+        const hrs = Math.floor(durationSec / 3600);
+        const mins = Math.floor((durationSec % 3600) / 60);
+        const secs = durationSec % 60;
+
+        durationDisplay.textContent = `Session duration: ${hrs}h ${mins}m ${secs}s`;
+      });
+
+      playerDiv.appendChild(nameHeader);
+      playerDiv.appendChild(clockInBtn);
+      playerDiv.appendChild(clockOutBtn);
+      playerDiv.appendChild(clockInDisplay);
+      playerDiv.appendChild(clockOutDisplay);
+      playerDiv.appendChild(durationDisplay);
+      playersDiv.appendChild(playerDiv);
+    });
+  </script>
+</body>
+</html>

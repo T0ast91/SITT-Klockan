@@ -1,138 +1,161 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Poker Grind Clock</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #121212;
-      color: #f1f1f1;
-      text-align: center;
-      padding: 40px;
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 10px;
+      background-color: #f9f9f9;
+      color: #222;
     }
     h1 {
-      margin-bottom: 40px;
+      text-align: center;
+      margin-bottom: 30px;
     }
     .player {
-      border: 1px solid #444;
-      background: #1e1e1e;
-      padding: 20px;
-      margin: 20px auto;
-      max-width: 400px;
-      border-radius: 10px;
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 0 7px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .clock-in-time,
-    .clock-out-time,
-    .duration {
+    .player-name {
+      font-weight: bold;
       font-size: 1.1em;
-      margin-top: 8px;
+      width: 100px;
+    }
+    .timer {
+      font-family: monospace;
+      font-size: 1.3em;
+      width: 90px;
+      text-align: center;
     }
     button {
-      padding: 10px 20px;
-      font-size: 1em;
-      margin: 5px;
+      margin-left: 10px;
+      padding: 8px 14px;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
       cursor: pointer;
-    }
-    .in {
-      background-color: #28a745;
+      font-weight: bold;
       color: white;
+      background-color: #007bff;
+      transition: background-color 0.3s ease;
     }
-    .out {
-      background-color: #dc3545;
-      color: white;
+    button:hover:not(:disabled) {
+      background-color: #0056b3;
     }
     button:disabled {
-      background: #555;
-      cursor: not-allowed;
+      background-color: #999;
+      cursor: default;
     }
   </style>
 </head>
 <body>
   <h1>Poker Grind Clock</h1>
-
-  <div id="players"></div>
+  <div id="players-container"></div>
 
   <script>
+    // Define the players
     const players = [
-  { name: "Toast" },
-  { name: "Kalv" },
-  { name: "Kråjtz" },
-  { name: "Skagge" },
-  { name: "Ov" },
-  { name: "Kzzon" }
-
+      { name: "Toast" },
+      { name: "Kalv" },
+      { name: "Kråjtz" },
+      { name: "Skagge" },
+      { name: "Ov" },
+      { name: "Mulen" }  // Added 6th player here
     ];
 
-    const playersDiv = document.getElementById('players');
+    // Store player timers and intervals
+    const timers = players.map(() => 0);
+    const intervals = players.map(() => null);
+    const clockedIn = players.map(() => false);
 
+    const container = document.getElementById("players-container");
+
+    // Format seconds into HH:MM:SS
+    function formatTime(seconds) {
+      const hrs = Math.floor(seconds / 3600);
+      const mins = Math.floor((seconds % 3600) / 60);
+      const secs = seconds % 60;
+      return [hrs, mins, secs]
+        .map(unit => String(unit).padStart(2, '0'))
+        .join(':');
+    }
+
+    // Update display for a player
+    function updateDisplay(index) {
+      const timerElem = document.getElementById(`timer-${index}`);
+      timerElem.textContent = formatTime(timers[index]);
+    }
+
+    // Clock in function
+    function clockIn(index) {
+      if (clockedIn[index]) return;  // already clocked in
+      clockedIn[index] = true;
+      document.getElementById(`clock-in-${index}`).disabled = true;
+      document.getElementById(`clock-out-${index}`).disabled = false;
+
+      intervals[index] = setInterval(() => {
+        timers[index]++;
+        updateDisplay(index);
+      }, 1000);
+    }
+
+    // Clock out function
+    function clockOut(index) {
+      if (!clockedIn[index]) return;  // already clocked out
+      clockedIn[index] = false;
+      document.getElementById(`clock-in-${index}`).disabled = false;
+      document.getElementById(`clock-out-${index}`).disabled = true;
+
+      clearInterval(intervals[index]);
+      intervals[index] = null;
+    }
+
+    // Build the UI
     players.forEach((player, index) => {
       const playerDiv = document.createElement('div');
       playerDiv.className = 'player';
 
-      const nameHeader = document.createElement('h2');
-      nameHeader.textContent = player.name;
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'player-name';
+      nameSpan.textContent = player.name;
+
+      const timerSpan = document.createElement('span');
+      timerSpan.className = 'timer';
+      timerSpan.id = `timer-${index}`;
+      timerSpan.textContent = formatTime(0);
 
       const clockInBtn = document.createElement('button');
+      clockInBtn.id = `clock-in-${index}`;
       clockInBtn.textContent = 'Clock In';
-      clockInBtn.className = 'in';
+      clockInBtn.onclick = () => clockIn(index);
 
       const clockOutBtn = document.createElement('button');
+      clockOutBtn.id = `clock-out-${index}`;
       clockOutBtn.textContent = 'Clock Out';
-      clockOutBtn.className = 'out';
       clockOutBtn.disabled = true;
+      clockOutBtn.onclick = () => clockOut(index);
 
-      const clockInDisplay = document.createElement('div');
-      clockInDisplay.className = 'clock-in-time';
-      clockInDisplay.textContent = 'Not clocked in';
-
-      const clockOutDisplay = document.createElement('div');
-      clockOutDisplay.className = 'clock-out-time';
-
-      const durationDisplay = document.createElement('div');
-      durationDisplay.className = 'duration';
-
-      let clockInTime = null;
-
-      clockInBtn.addEventListener('click', () => {
-        clockInTime = new Date();
-        const timeStr = clockInTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        clockInDisplay.textContent = `Clocked in at: ${timeStr}`;
-        clockInBtn.disabled = true;
-        clockOutBtn.disabled = false;
-        clockOutDisplay.textContent = '';
-        durationDisplay.textContent = '';
-      });
-
-      clockOutBtn.addEventListener('click', () => {
-        const clockOutTime = new Date();
-        const timeStr = clockOutTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        clockOutDisplay.textContent = `Clocked out at: ${timeStr}`;
-        clockOutBtn.disabled = true;
-
-        // Calculate session duration
-        const durationMs = clockOutTime - clockInTime;
-        const durationSec = Math.floor(durationMs / 1000);
-        const hrs = Math.floor(durationSec / 3600);
-        const mins = Math.floor((durationSec % 3600) / 60);
-        const secs = durationSec % 60;
-
-        durationDisplay.textContent = `Session duration: ${hrs}h ${mins}m ${secs}s`;
-      });
-
-      playerDiv.appendChild(nameHeader);
+      playerDiv.appendChild(nameSpan);
+      playerDiv.appendChild(timerSpan);
       playerDiv.appendChild(clockInBtn);
       playerDiv.appendChild(clockOutBtn);
-      playerDiv.appendChild(clockInDisplay);
-      playerDiv.appendChild(clockOutDisplay);
-      playerDiv.appendChild(durationDisplay);
-      playersDiv.appendChild(playerDiv);
+
+      container.appendChild(playerDiv);
     });
   </script>
 </body>
 </html>
+
 
 
 

@@ -59,7 +59,16 @@
   </style>
 </head>
 <body>
+  <body>
   <h1>Poker Grind Clock</h1>
+
+  <div id="auth">
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="login()">Log In</button>
+    <button onclick="logout()">Log Out</button>
+  </div>
+
   <div id="players-container"></div>
 
   <script>
@@ -123,7 +132,10 @@
     // Build the UI
     players.forEach((player, index) => {
       const playerDiv = document.createElement('div');
-      playerDiv.className = 'player';
+playerDiv.className = 'player';
+playerDiv.setAttribute('data-player', player.name);
+
+     
 
       const nameSpan = document.createElement('span');
       nameSpan.className = 'player-name';
@@ -174,9 +186,55 @@
   const db = firebase.firestore();
   const auth = firebase.auth();
 </script>
+<script>
+  let currentPlayer = null;
+
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      const email = user.email.toLowerCase();
+      if (email === "toast@example.com") currentPlayer = "Toast";
+      else if (email === "kalv@example.com") currentPlayer = "Kalv";
+      else if (email === "kråjtz@example.com") currentPlayer = "Kråjtz";
+      else if (email === "skagge@example.com") currentPlayer = "Skagge";
+      else if (email === "ov@example.com") currentPlayer = "Ov";
+      else if (email === "kzzon@example.com") currentPlayer = "Kzzon";
+      else if (email === "mulen@example.com") currentPlayer = "Mulen";
+
+      enablePlayerClock(currentPlayer);
+    } else {
+      disableAllClocks();
+    }
+  });
+
+  function login() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    auth.signInWithEmailAndPassword(email, password)
+      .catch(err => alert("Login error: " + err.message));
+  }
+
+  function logout() {
+    auth.signOut();
+  }
+
+  function enablePlayerClock(name) {
+    document.querySelectorAll('.player').forEach(playerDiv => {
+      const playerName = playerDiv.getAttribute('data-player');
+      const buttons = playerDiv.querySelectorAll('button');
+      buttons.forEach(btn => {
+        btn.disabled = playerName !== name;
+      });
+    });
+  }
+
+  function disableAllClocks() {
+    document.querySelectorAll('.player button').forEach(btn => btn.disabled = true);
+  }
+</script>
 
 </body>
 </html>
+
 
 
 

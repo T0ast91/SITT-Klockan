@@ -153,8 +153,31 @@
       container.appendChild(playerDiv);
     });
   </script>
+  <!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+  // Your Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyAbCdEfGhIjKlMnOpQrStUvWxYz123456",
+    authDomain: "myproject-12345.firebaseapp.com",
+    projectId: "myproject-12345",
+    storageBucket: "myproject-12345.appspot.com",
+    messagingSenderId: "9876543210",
+    appId: "1:9876543210:web:abcdef123456"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const auth = firebase.auth();
+</script>
+
 </body>
 </html>
+
 
 
 
